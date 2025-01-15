@@ -1,24 +1,35 @@
-import React, { useState, useEffect } from 'react'; 
-import { Link } from 'react-router-dom';
+import React, { useState, useContext } from 'react';
+import { Link, useNavigate } from 'react-router-dom';
+import axios from 'axios';
+import { UserDataContext } from '../context/UserContext';
 
 const UserLogin = () => {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
-  const [useData, setUserData] = useState({});
+  const { user, setUser } = useContext(UserDataContext);
+  const navigate = useNavigate();
 
-  const submitHandler = (e) => {
+  const submitHandler = async (e) => {
     e.preventDefault();
-    setUserData({
+
+    const userData = {
       email: email,
       password: password,
-    });
-    setEmail('');
-    setPassword('');
-  };
+    };
 
-  useEffect(() => {
-    console.log(useData);
-  }, [useData]);
+    try {
+      const response = await axios.post(`${import.meta.env.VITE_BASE_URL}/users/login`, userData);
+
+      if (response.status === 200) {
+        const data = response.data;
+        setUser(data.user);
+        localStorage.setItem('token', data.token);
+        navigate('/home');
+      }
+    } catch (error) {
+      console.error('Error logging in:', error);
+    }
+  };
 
   return (
     <div className="flex items-center justify-center h-screen bg-gray-100">
@@ -28,10 +39,8 @@ const UserLogin = () => {
           src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQYQy-OIkA6In0fTvVwZADPmFFibjmszu2A0g&s"
           alt="Logo"
         />
-
         <form onSubmit={submitHandler}>
           <h3 className="text-xl font-medium mb-4 text-gray-700 text-center">Log In</h3>
-          
           <label htmlFor="email" className="text-sm font-medium text-gray-600">
             What's your email
           </label>
@@ -44,20 +53,18 @@ const UserLogin = () => {
             type="email"
             placeholder="email@example.com"
           />
-
           <label htmlFor="password" className="text-sm font-medium text-gray-600">
             Enter Password
           </label>
           <input
             id="password"
-            className="bg-gray-100 rounded-lg px-4 py-2 border w-full text-sm mb-6"
+            required
             value={password}
             onChange={(e) => setPassword(e.target.value)}
-            required
+            className="bg-gray-100 rounded-lg px-4 py-2 border w-full text-sm mb-6"
             type="password"
-            placeholder="password"
+            placeholder="Password"
           />
-
           <button
             type="submit"
             className="bg-blue-500 hover:bg-blue-600 text-white font-medium rounded-lg px-4 py-2 w-full text-sm"
@@ -75,7 +82,7 @@ const UserLogin = () => {
 
         <Link
           to="/captain-login"
-          className="bg-green-500 hover:bg-green-600 text-white font-medium rounded-lg px-4 py-2 w-full mt-6 block text-center text-sm"
+          className="bg-[#10b461] flex items-center justify-center text-white font-semibold mb-5 rounded-lg px-4 py-2 w-full text-lg placeholder:text-base"
         >
           Sign in as Captain
         </Link>

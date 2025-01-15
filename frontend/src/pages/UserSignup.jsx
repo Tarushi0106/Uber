@@ -1,37 +1,46 @@
-import React, { useState, useEffect } from 'react'; 
-import { Link } from 'react-router-dom';
+import React, { useState, useContext } from 'react';
+import { Link, useNavigate } from 'react-router-dom';
+import axios from 'axios';
+import { UserDataContext } from '../context/UserContext';
 
-const UserLogin = () => {
+const UserSignup = () => {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [firstName, setFirstName] = useState('');
   const [lastName, setLastName] = useState('');
-  const [useData, setUserData] = useState({});
+  const [userData, setUserData] = useState({});
 
-  const submitHandler = (e) => {
+  const navigate = useNavigate();
+  const { user, setUser } = useContext(UserDataContext);
+
+  const submitHandler = async (e) => {
     e.preventDefault();
-    setUserData({
-      fullName:{
-        firstName,
-        lastName,
+    const newUser = {
+      fullname: {
+        firstname: firstName,
+        lastname: lastName,
       },
-     
-      email,
-      password,
-    });
+      email: email,
+      password: password,
+    };
 
+    try {
+      const response = await axios.post(`${import.meta.env.VITE_BASE_URL}/users/register`, newUser);
+      if (response.status === 201) {
+        const data = response.data;
+        setUser(data.user);
+        localStorage.setItem('token', data.token);
+        navigate('/home');
+      }
+    } catch (error) {
+      console.error('Error registering user:', error);
+    }
 
     setFirstName('');
     setLastName('');
     setEmail('');
     setPassword('');
   };
-
-  useEffect(() => {
-   
-    console.log('User Data:', useData);
-  }, [useData]);
-
   return (
     <div className="flex items-center justify-center h-screen bg-gray-100">
       <div className="bg-white p-8 rounded-lg shadow-lg w-full max-w-md">
@@ -40,7 +49,6 @@ const UserLogin = () => {
           src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQYQy-OIkA6In0fTvVwZADPmFFibjmszu2A0g&s"
           alt="Logo"
         />
-
         <form onSubmit={submitHandler}>
           <h3 className="text-xl font-medium mb-4 text-gray-700 text-center">Sign Up</h3>
 
@@ -100,24 +108,27 @@ const UserLogin = () => {
             type="submit"
             className="bg-blue-500 hover:bg-blue-600 text-white font-medium rounded-lg px-4 py-2 w-full text-sm"
           >
-            Login
+            Create Account
           </button>
         </form>
 
         <p className="text-center text-sm mt-4">
           Already have an account?{' '}
-          <Link to="/Captain-login" className="text-blue-600 hover:underline">
+          <Link to="/login" className="text-blue-600 hover:underline">
             Log in here
           </Link>
         </p>
 
         <div>
-        <p className="mt-8 text-xs">This site is protected by reCAPTCHA and the <span className='underline'>Google Privacy
-            Policy</span> and <span className='underline'>Terms of Service apply</span>.</p>
+          <p className="mt-8 text-xs">
+            This site is protected by reCAPTCHA and the{' '}
+            <span className="underline">Google Privacy Policy</span> and{' '}
+            <span className="underline">Terms of Service apply</span>.
+          </p>
         </div>
       </div>
     </div>
-  );
-};
+  )
+}
 
-export default UserLogin;
+export default UserSignup
