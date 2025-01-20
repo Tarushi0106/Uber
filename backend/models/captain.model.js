@@ -55,7 +55,7 @@ const captainSchema = new mongoose.Schema({
             minlength: [3, "car",'motarcycle','auto'],
         },
         location:{
-            lat:{
+            ltd:{
                 type:Number,
             },
             lang:{
