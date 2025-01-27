@@ -4,28 +4,36 @@ import axios from 'axios';
 import { UserDataContext } from '../context/UserContext';
 
 const UserSignup = () => {
-  const [email, setEmail] = useState('');
-  const [password, setPassword] = useState('');
+  const navigate = useNavigate();
+
   const [firstName, setFirstName] = useState('');
   const [lastName, setLastName] = useState('');
-  const [userData, setUserData] = useState({});
+  const [email, setEmail] = useState('');
+  const [password, setPassword] = useState('');
 
-  const navigate = useNavigate();
-  const { user, setUser } = useContext(UserDataContext);
+  const { setUser } = useContext(UserContext);
 
   const submitHandler = async (e) => {
     e.preventDefault();
     const newUser = {
-      fullname: {
-        firstname: firstName,
-        lastname: lastName,
-      },
-      email: email,
-      password: password,
+      firstname: firstName,
+      lastname: lastName,
+      email,
+      password,
     };
-
     try {
-      const response = await axios.post(`${import.meta.env.VITE_BASE_URL}/users/register`, newUser);
+      const token = localStorage.getItem('token');
+      if (!token) {
+        console.error('No token found in localStorage');
+        return;
+      }
+
+      const response = await axios.post(`${import.meta.env.VITE_BASE_URL}/users/register`, newUser, {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      });
+
       if (response.status === 201) {
         const data = response.data;
         setUser(data.user);
@@ -33,7 +41,7 @@ const UserSignup = () => {
         navigate('/home');
       }
     } catch (error) {
-      console.error('Error registering user:', error);
+      console.error('Error registering user:', error.response?.data || error.message);
     }
 
     setFirstName('');

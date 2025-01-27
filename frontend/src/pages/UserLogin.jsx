@@ -6,12 +6,12 @@ import { UserDataContext } from '../context/UserContext';
 const UserLogin = () => {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
-  const { user, setUser } = useContext(UserDataContext);
+  const { setUser } = useContext(UserDataContext);
   const navigate = useNavigate();
 
   const submitHandler = async (e) => {
     e.preventDefault();
-
+  
     const userData = {
       email: email,
       password: password,
@@ -21,15 +21,29 @@ const UserLogin = () => {
       const response = await axios.post(`${import.meta.env.VITE_BASE_URL}/users/login`, userData);
 
       if (response.status === 200) {
-        const data = response.data;
-        setUser(data.user);
-        localStorage.setItem('token', data.token);
+        const { token, user } = response.data;
+
+        // Debugging Logs
+        console.log('Response Data:', response.data);
+        console.log('Saving token to localStorage:', token);
+
+        // Save user and token
+        setUser(user);
+        localStorage.setItem('token', token);
+        localStorage.setItem('user', JSON.stringify(user));
+
+        // Verify storage
+        console.log('Token in localStorage:', localStorage.getItem('token'));
+        console.log('User in localStorage:', localStorage.getItem('user'));
+
         navigate('/home');
       }
     } catch (error) {
-      console.error('Error logging in:', error);
+      console.error('Login error:', error.response?.data || error.message);
     }
+  
   };
+  
 
   return (
     <div className="flex items-center justify-center h-screen bg-gray-100">
